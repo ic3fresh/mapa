@@ -2,7 +2,6 @@
 """
 Script to get data from paciak and geocode it.
 """
-import urllib.parse
 import json
 import time
 import requests
@@ -10,12 +9,12 @@ import os
 
 DEBUG = True
 
-#API_TOKEN = os.environ['API_TOKEN']
+API_TOKEN = os.environ["API_TOKEN"]
 API_URL = "https://paciak.pl/api/"
 API_SLEEP = 1
-TOKEN = {"Authorization": "Bearer ciach"} #.format(API_TOKEN=API_TOKEN)}
+TOKEN = {"Authorization": "Bearer {API_TOKEN}".format(API_TOKEN=API_TOKEN)}
 
-#
+
 def debug(text):
     """Debug messages"""
     if DEBUG:
@@ -40,7 +39,6 @@ def paciak_api(url):
     except requests.status_codes as e:
         print("Oppss, URL error: {0}".format(e.reason))
         exit(2)
-
     return response
 
 
@@ -53,10 +51,10 @@ def get_users():
         page = "users?page={page}".format(page=page_number)
         url = paciak_api_url(page)
         debug("In get_users: {0}".format(url))
-        response = paciak_api(url).text  # .decode('utf-8') - not needed anymore(?)
+        response = paciak_api(url).text
         response = json.loads(response)
         for user in response["users"]:
-            users.append(user["userslug"])
+            users.append(user["userslug"].encode("utf-8"))
             uid = int(user["uid"])
         page_number += 1
     return users
@@ -65,59 +63,47 @@ def get_users():
 def get_data(users):
     """Get data about users, omit users without location"""
     users_data = list()
-
     for user in users:
         debug("Processing in get_data: {0}".format(user))
-
         data = dict()
         url = paciak_api_url("user/{0}".format(user))
-        user_data = paciak_api(url).text  # .decode('utf-8') - not needed anymore(?)
+        user_data = paciak_api(url).text
         user_data = json.loads(user_data)
-
         if len(user_data["location"]) > 0:
             data["username"] = user_data["username"]
             data["avatar"] = user_data["picture"].replace("{size}", "32")
             data["location"] = dict()
-
-            location = get_latlon(user_data["location"])
+            location = get_latlon(user_data["location"].encode("utf-8"))
             if location:
                 data["location"]["name"] = user_data["location"]
                 data["location"]["lat"] = location[0]["lat"]
                 data["location"]["lon"] = location[0]["lon"]
-
                 debug("In get_data, location: {0}".format(location))
-
                 users_data.append(data)
             else:
                 debug("In get_data, no location for {0}".format(user))
-
         time.sleep(API_SLEEP)
-    print(users_data)
     return users_data
 
 
 def get_latlon(location):
     """Geocode location"""
-    url = "https://nominatim.openstreetmap.org/search/?q={0}&format=json&limit=1".format(
-        urllib.parse.quote(location))
+    url = "https://nominatim.openstreetmap.org/search/?q={0}&format=json&limit=1".format(location)
     debug("In get_latlon: {0}".format(url))
     response = None
     try:
-        response = requests.get(url)
+        response = requests.get(url).text
     except requests.status_codes as e:
         print("Geocoding HTTP error {0} with: {1}".format(e.code, e.reason))
         exit(3)
     except requests.status_codes as e:
         print("Geocoding URL error: {0}".format(e.reason))
         exit(4)
-
-    response = json.loads(response.text) #.decode('utf-8'))
-
+    response = json.loads(response)
     return response
 
 
 if __name__ == "__main__":
     paciak_users = get_users()
     usersdata = get_data(paciak_users)
-    print(usersdata)
     print(json.dumps(usersdata, indent=2))
