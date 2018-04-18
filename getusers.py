@@ -2,9 +2,7 @@
 """
 Script to get data from paciak and geocode it.
 """
-import urllib.request
 import urllib.parse
-import urllib.error
 import json
 import time
 import requests
@@ -12,12 +10,12 @@ import os
 
 DEBUG = True
 
-API_TOKEN = os.environ['API_TOKEN']
+#API_TOKEN = os.environ['API_TOKEN']
 API_URL = "https://paciak.pl/api/"
 API_SLEEP = 1
-TOKEN = {"Authorization": "Bearer {API_TOKEN}".format(API_TOKEN=API_TOKEN)}
+TOKEN = {"Authorization": "Bearer ciach"} #.format(API_TOKEN=API_TOKEN)}
 
-
+#
 def debug(text):
     """Debug messages"""
     if DEBUG:
@@ -35,11 +33,11 @@ def paciak_api(url):
     try:
         debug("In paciak_api: {0}".format(url))
         response = requests.get(url, headers=TOKEN)
-    except urllib.error.HTTPError as e:
+    except requests.status_codes as e:
         print("Oppss, HTTP returned: {0} with: {1}".format(e.code, e.reason))
         print("Check API settings")
         exit(1)
-    except urllib.error.URLError as e:
+    except requests.status_codes as e:
         print("Oppss, URL error: {0}".format(e.reason))
         exit(2)
 
@@ -105,15 +103,15 @@ def get_latlon(location):
     debug("In get_latlon: {0}".format(url))
     response = None
     try:
-        response = urllib.request.urlopen(url)
-    except urllib.error.HTTPError as e:
+        response = requests.get(url)
+    except requests.status_codes as e:
         print("Geocoding HTTP error {0} with: {1}".format(e.code, e.reason))
         exit(3)
-    except urllib.error.URLError as e:
+    except requests.status_codes as e:
         print("Geocoding URL error: {0}".format(e.reason))
         exit(4)
 
-    response = json.loads(response.read().decode('utf-8'))
+    response = json.loads(response.text) #.decode('utf-8'))
 
     return response
 
@@ -121,4 +119,5 @@ def get_latlon(location):
 if __name__ == "__main__":
     paciak_users = get_users()
     usersdata = get_data(paciak_users)
+    print(usersdata)
     print(json.dumps(usersdata, indent=2))
