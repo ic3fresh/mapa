@@ -8,13 +8,14 @@ import urllib.error
 import json
 import time
 import requests
+import os
 
 DEBUG = True
 
+API_TOKEN = os.environ['API_TOKEN']
 API_URL = "https://paciak.pl/api/"
-API_USER = "APIUSER"
 API_SLEEP = 1
-TOKEN = {"Authorization": "Bearer ciach"}
+TOKEN = {"Authorization": "Bearer {API_TOKEN}".format(API_TOKEN=API_TOKEN)}
 
 
 def debug(text):
@@ -30,6 +31,7 @@ def paciak_api_url(req):
 
 def paciak_api(url):
     """Make API call to discourse"""
+    response = None
     try:
         debug("In paciak_api: {0}".format(url))
         response = requests.get(url, headers=TOKEN)
@@ -53,80 +55,70 @@ def get_users():
         page = "users?page={page}".format(page=page_number)
         url = paciak_api_url(page)
         debug("In get_users: {0}".format(url))
-        response = paciak_api(url).text  # .decode('utf-8')
+        response = paciak_api(url).text  # .decode('utf-8') - not needed anymore(?)
         response = json.loads(response)
-        for user in response['users']:
-            users.append(user['username'])
-            uid = int(user['uid'])
+        for user in response["users"]:
+            users.append(user["userslug"])
+            uid = int(user["uid"])
         page_number += 1
     return users
 
 
-# def get_data(users):
-#     """Get data about users, omit users without location"""
-#     users_data = list()
-#
-#     for user in users:
-#         debug("Processing in get_data: {0}".format(user))
-#
-#         data = dict()
-#         url = discourse_api_url("users/{0}.json?".format(user))
-#         user_data = discourse_api(url).read().decode('utf-8')
-#         user_data = json.loads(user_data)
-#
-#         if "location" in user_data["user"]:
-#             data["username"] = user
-#             data["avatar"] = user_data["user"]["avatar_template"].replace("{size}", "32")
-#             data["location"] = dict()
-#
-#             location = get_latlon(user_data["user"]["location"])
-#             if location:
-#                 data["location"]["name"] = user_data["user"]["location"]
-#                 data["location"]["lat"] = location[0]["lat"]
-#                 data["location"]["lon"] = location[0]["lon"]
-#
-#                 debug("In get_data, location: {0}".format(location))
-#
-#                 users_data.append(data)
-#             else:
-#                 debug("In get_data, no location for {0}".format(user))
-#
-#         time.sleep(API_SLEEP)
-#
-#     return users_data
+def get_data(users):
+    """Get data about users, omit users without location"""
+    users_data = list()
+
+    for user in users:
+        debug("Processing in get_data: {0}".format(user))
+
+        data = dict()
+        url = paciak_api_url("user/{0}".format(user))
+        user_data = paciak_api(url).text  # .decode('utf-8') - not needed anymore(?)
+        user_data = json.loads(user_data)
+
+        if len(user_data["location"]) > 0:
+            data["username"] = user_data["username"]
+            data["avatar"] = user_data["picture"].replace("{size}", "32")
+            data["location"] = dict()
+
+            location = get_latlon(user_data["location"])
+            if location:
+                data["location"]["name"] = user_data["location"]
+                data["location"]["lat"] = location[0]["lat"]
+                data["location"]["lon"] = location[0]["lon"]
+
+                debug("In get_data, location: {0}".format(location))
+
+                users_data.append(data)
+            else:
+                debug("In get_data, no location for {0}".format(user))
+
+        time.sleep(API_SLEEP)
+    print(users_data)
+    return users_data
 
 
-#
-#
-# def get_latlon(location):
-#     """Geocode location"""
-#     url = "https://nominatim.openstreetmap.org/search/?q={0}&format=json&limit=1".format(
-#         urllib.parse.quote(location))
-#     debug("In get_latlon: {0}".format(url))
-#
-#     try:
-#         response = urllib.request.urlopen(url)
-#     except urllib.error.HTTPError as e:
-#         print("Geocoding HTTP error {0} with: {1}".format(e.code, e.reason))
-#         exit(3)
-#     except urllib.error.URLError as e:
-#         print("Geocoding URL error: {0}".format(e.reason))
-#         exit(4)
-#
-#     response = json.loads(response.read().decode('utf-8'))
-#
-#     return response
-#
-#
+def get_latlon(location):
+    """Geocode location"""
+    url = "https://nominatim.openstreetmap.org/search/?q={0}&format=json&limit=1".format(
+        urllib.parse.quote(location))
+    debug("In get_latlon: {0}".format(url))
+    response = None
+    try:
+        response = urllib.request.urlopen(url)
+    except urllib.error.HTTPError as e:
+        print("Geocoding HTTP error {0} with: {1}".format(e.code, e.reason))
+        exit(3)
+    except urllib.error.URLError as e:
+        print("Geocoding URL error: {0}".format(e.reason))
+        exit(4)
+
+    response = json.loads(response.read().decode('utf-8'))
+
+    return response
 
 
 if __name__ == "__main__":
     paciak_users = get_users()
-    # usersdata = get_data(paciak_users)
-    # print(json.dumps(usersdata, indent=2))
-    # url = paciak_api_url('user/mariom')
-    # r = requests.get('https://paciak.pl/api/user/mariom', headers=TOKEN)
-    # print(r.text)
-
-    # response1 = paciak_api(url).read().decode('utf-8')
-    # print (json.loads(response1))
+    usersdata = get_data(paciak_users)
+    print(json.dumps(usersdata, indent=2))
