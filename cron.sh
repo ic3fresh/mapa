@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PATH="/home/"
+PATH="/opt/mapa"
 DEST="/var/www/mapa"
 
-/usr/bin/python3 $PATH/getusers.py > $PATH/users.json && /bin/cp $PATH/users.json $DEST/users.json || echo "mapa: dane nie pobraly sie poprawnie"
+/usr/bin/python $PATH/getusers.py > $PATH/users.json && /bin/cp $PATH/users.json $DEST/users.json || echo "mapa: dane nie pobraly sie poprawnie"
