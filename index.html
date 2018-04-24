@@ -64,7 +64,7 @@
 
             var tmpMarker = L.marker([data[i]["location"]["lat"], data[i]["location"]["lon"]],
                       {icon: tmpIcon}); //.addTo(map);
-            tmpMarker.bindPopup("<b>" + data[i]["username"] + "</b><br><a href='https://paciak.pl/u/"
+            tmpMarker.bindPopup("<b>" + data[i]["username"] + "</b><br><a href='https://paciak.pl/user/"
                 + data[i]["username"] + "'>pokaż profil</a><br><i>" + data[i]["location"]["name"] + "</i>");
             markers.addLayer(tmpMarker);
             //tmpMarker.addTo(map);
