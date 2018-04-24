@@ -55,8 +55,14 @@
 
       $.getJSON("users.json", function(data){
           for(var i=0; i<data.length; i++){
+
+            var avatarUrl = data[i]["avatar"];
+            if (avatarUrl.startsWith("/")) {
+              avatarUrl = "//paciak.pl/" + avatarUrl;
+            }
+
             var tmpIcon = L.icon({
-              iconUrl: 'https://paciak.pl' + data[i]["avatar"],
+              iconUrl: avatarUrl,
               iconSize: [32, 32],
               iconAnchor: [16, 16],
               popupAnchor: [0, -16],
