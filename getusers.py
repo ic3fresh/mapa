@@ -106,4 +106,5 @@ def get_latlon(location):
 if __name__ == "__main__":
     paciak_users = get_users()
     usersdata = get_data(paciak_users)
-    print(json.dumps(usersdata, indent=2))
+    with open("users.json", "w") as outputfile:
+        json.dump(usersdata, outputfile)
