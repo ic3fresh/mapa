@@ -7,7 +7,7 @@ import time
 import requests
 import os
 
-DEBUG = True
+DEBUG = False
 
 API_TOKEN = os.environ["API_TOKEN"]
 API_URL = "https://paciak.pl/api/"
@@ -22,12 +22,12 @@ def debug(text):
 
 
 def paciak_api_url(req):
-    """Prepare discourse api call url"""
+    """Prepare NodeBB api call url"""
     return "{0}{1}".format(API_URL, req)
 
 
 def paciak_api(url):
-    """Make API call to discourse"""
+    """Make API call to NodeBB"""
     response = None
     try:
         debug("In paciak_api: {0}".format(url))
