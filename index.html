@@ -1,78 +1,84 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>PaciakMapa v0.1</title>
-    <meta charset="UTF-8">
-    <link rel="apple-touch-icon" type="image/png" href="icon.png">
-    <link rel="icon" type="image/png" sizes="144x144" href="icon.png">
 
-    <!-- Leaflet css -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
-      integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
-      crossorigin=""/>
+<head>
+  <title>PaciakMapa v0.1</title>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" type="image/png" href="icon.png">
+  <link rel="icon" type="image/png" sizes="144x144" href="icon.png">
 
-    <!-- Leaflet js -->
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
-      integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
-      crossorigin=""></script>
+  <!-- Leaflet css -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
+    crossorigin="" />
 
-    <!-- Leaflet clustering -->
-    <script src="https://unpkg.com/leaflet.markercluster@1.1.0/dist/leaflet.markercluster.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.Default.css">
+  <!-- Leaflet js -->
+  <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
+    crossorigin=""></script>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <!-- Leaflet clustering -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.1.0/dist/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.Default.css">
 
-    <style>
-      * {
-        margin: 0 0;
-        padding: 0 0;
-      }
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
-      #mapid {
-        height: 100vh;
-        width:  100vw;
-      }
+  <style>
+    * {
+      margin: 0 0;
+      padding: 0 0;
+    }
 
-      .leaflet-marker-icon {
-        border-radius: 50%;
-        background-color: #fff;
-	      box-shadow: 0 0 1px 1px #000000;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="mapid"></div>
+    #mapid {
+      height: 100vh;
+      width: 100vw;
+    }
 
-    <script>
-      var map = L.map('mapid').setView([51.85, 18], 7);
-      var markers = L.markerClusterGroup();
+    .leaflet-marker-icon {
+      border-radius: 50%;
+      background-color: #fff;
+      box-shadow: 0 0 1px 1px #000000;
+    }
+  </style>
+</head>
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-      }).addTo(map);
+<body>
+  <div id="mapid"></div>
 
-      $.getJSON("users.json", function(data){
-          for(var i=0; i<data.length; i++){
-            var tmpIcon = L.icon({
-              iconUrl: 'https://paciak.pl' + data[i]["avatar"],
-              iconSize: [32, 32],
-              iconAnchor: [16, 16],
-              popupAnchor: [0, -16],
-            });
+  <script>
+    var map = L.map('mapid').setView([51.85, 18], 7);
+    var markers = L.markerClusterGroup();
 
-            var tmpMarker = L.marker([data[i]["location"]["lat"], data[i]["location"]["lon"]],
-                      {icon: tmpIcon}); //.addTo(map);
-            tmpMarker.bindPopup("<b>" + data[i]["username"] + "</b><br><a href='https://paciak.pl/user/"
-                + data[i]["username"] + "'>pokaż profil</a><br><i>" + data[i]["location"]["name"] + "</i>");
-            markers.addLayer(tmpMarker);
-            //tmpMarker.addTo(map);
-          }
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    $.getJSON('users.json', function (users) {
+      users.forEach((user) => {
+        var name = user['username'];
+        var avatarUrl = user['avatar'];
+        var profileUrl = 'https://paciak.pl/user/' + user['userslug'];
+
+        if (avatarUrl.startsWith('/')) {
+          avatarUrl = '//paciak.pl/' + avatarUrl;
+        }
+
+        var icon = L.icon({
+          iconUrl: avatarUrl,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16],
+        });
+
+        var marker = L.marker([user['location']['lat'], user['location']['lon']], { icon: icon });
+        marker.bindPopup('<b>' + name + '</b><br><a href="' + profileUrl + '">pokaż profil</a><br><i>' + name + '</i>');
+        markers.addLayer(marker);
       });
+    });
 
-      map.addLayer(markers);
+    map.addLayer(markers);
 
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
