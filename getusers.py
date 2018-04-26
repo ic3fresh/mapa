@@ -45,9 +45,9 @@ def paciak_api(url):
 def get_users():
     """Get list of all users"""
     page_number = 1
-    uid = 1
+    uid = 2
     users = list()
-    while uid >= 1:
+    while uid > 1:
         page = "users?page={page}".format(page=page_number)
         url = paciak_api_url(page)
         debug("In get_users: {0}".format(url))
