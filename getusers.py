@@ -47,7 +47,7 @@ def get_users():
     page_number = 1
     uid = 0
     users = list()
-    while uid is not 1:
+    while uid >= 1:
         page = "users?page={page}".format(page=page_number)
         url = paciak_api_url(page)
         debug("In get_users: {0}".format(url))
