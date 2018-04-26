@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Script to get data from paciak and geocode it.
 """
@@ -45,17 +45,17 @@ def paciak_api(url):
 def get_users():
     """Get list of all users"""
     page_number = 1
-    uid = 2
     users = list()
-    while uid > 1:
+    while True:
         page = "users?page={page}".format(page=page_number)
         url = paciak_api_url(page)
         debug("In get_users: {0}".format(url))
         response = paciak_api(url).text
         response = json.loads(response)
+        if not response["users"]:
+            break
         for user in response["users"]:
             users.append(user["userslug"].encode("utf-8"))
-            uid = int(user["uid"])
         page_number += 1
     return users
 
