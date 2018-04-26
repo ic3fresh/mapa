@@ -45,7 +45,7 @@ def paciak_api(url):
 def get_users():
     """Get list of all users"""
     page_number = 1
-    uid = 0
+    uid = 1
     users = list()
     while uid >= 1:
         page = "users?page={page}".format(page=page_number)
